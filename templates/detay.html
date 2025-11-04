@@ -212,6 +212,7 @@
             {% endif %}
             
             <form action="{{ url_for('detay') }}" method="post" id="contentForm" class="space-y-6">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="relative">
                     <label for="user_input" class="block text-lg font-bold text-white mb-3">
                         💬 Video Konusu / Özeti
