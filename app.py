@@ -71,7 +71,7 @@ app.config.update(
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
+    default_limits=["2000 per day", "500 per hour"],
     storage_uri="memory://"
 )
 
@@ -648,7 +648,7 @@ def create_thumbnail_image(design_data, category, title="", detailed_description
 # FLASK ROUTES
 # =========================================================
 @app.route('/', methods=['GET', 'POST'])
-# @limiter.limit("30 per minute") # <- Bu yorumu fark ettim, test için kapatılmış
+@limiter.limit("300 per minute") # <- Bu yorumu fark ettim, test için kapatılmış
 def index():
     if request.method == 'POST':
         category = request.form.get('category', '').strip()
@@ -662,7 +662,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/detay', methods=['GET', 'POST'])
-@limiter.limit("20 per minute")
+@limiter.limit("200 per minute")
 def detay():
     category = session.get('category')
     error_message_from_url = request.args.get('error_message')
@@ -693,7 +693,7 @@ def detay():
     return render_template('detay.html', category=category, error_message=error_message_from_url)
 
 @app.route('/optimize', methods=['GET', 'POST'])
-@limiter.limit("15 per minute")
+@limiter.limit("150 per minute")
 def optimize():
     category = session.get('category')
     detailed_description = session.get('detailed_description')
@@ -736,7 +736,7 @@ def optimize():
     )
 
 @app.route('/generate-thumbnail', methods=['POST'])
-@limiter.limit("10 per minute")
+@limiter.limit("100 per minute")
 @csrf.exempt
 def generate_thumbnail():
     try:
@@ -782,7 +782,7 @@ def generate_thumbnail():
         return {"error": "Thumbnail oluşturulamadı"}, 500
 
 @app.route('/download-thumbnail')
-@limiter.limit("20 per minute")
+@limiter.limit("200 per minute")
 def download_thumbnail():
     try:
         design_data = session.get('thumbnail_design')
