@@ -141,6 +141,13 @@
             </p>
         </div>
         
+        <!-- YASAL UYARI - YENİ EKLENEN -->
+        <div class="glass p-3 mb-4 w-full max-w-5xl">
+            <p class="text-white/80 text-sm text-center font-medium">
+                ⚠️ Aşağıdaki istatistikler ve grafikler tanıtım amaçlı simüle edilmiş verilerdir.
+            </p>
+        </div>
+        
         <!-- Live Stats -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 w-full max-w-5xl">
             <div class="stat-card p-4 text-center">
@@ -190,7 +197,7 @@
             {% endif %}
             
             <form action="{{ url_for('index') }}" method="post" class="space-y-5">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div>
                     <select id="video_kategori" name="category" required 
                             class="w-full px-6 py-4 bg-white/20 border-2 border-white/30 rounded-xl text-white text-lg font-medium focus:ring-4 focus:ring-green-400 focus:border-green-400 transition duration-200 shadow-lg"
@@ -276,11 +283,20 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Grafik Notu - YENİ EKLENEN -->
+            <div class="text-center mt-3">
+                <p class="text-white/60 text-xs italic">
+                    * Örnek görselleştirme amaçlıdır
+                </p>
+            </div>
         </div>
         
         <!-- Footer Stats -->
         <div class="mt-4 text-center text-white/70 text-sm">
             <p>💚 1,847 içerik üreticisi bugün optimizasyon yaptı</p>
+            <!-- Simülasyon Notu - YENİ EKLENEN -->
+            <p class="text-white/50 text-xs mt-1 italic">* Simüle edilmiş veridir</p>
         </div>
     </div>
     
