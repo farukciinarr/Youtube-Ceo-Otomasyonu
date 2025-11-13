@@ -1,4 +1,3 @@
-# Gerekli Flask modüllerini ve OpenAI kütüphanesini içe aktar
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -19,12 +18,9 @@ import re
 import logging
 from logging.handlers import RotatingFileHandler
 
-# .env dosyasını yükle
 load_dotenv()
 
-# =========================================================
-# GÜVENLIK AYARLARI - LOGGING
-# =========================================================
+
 if not os.path.exists('logs'):
     os.mkdir('logs')
 
@@ -34,30 +30,22 @@ file_handler.setFormatter(logging.Formatter(
 ))
 file_handler.setLevel(logging.INFO)
 
-# =========================================================
-# API AYARLARI - GÜVENLİ (HARDCODED KEY YOK!)
-# =========================================================
+
 API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL_NAME = "gpt-4o-mini"
 UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY")
 
-# =========================================================
-# FLASK UYGULAMASI BAŞLATMA VE YAPILANDIRMA
-# =========================================================
 
-# Flask uygulamasını başlat
+
 app = Flask(__name__)
 
-# ✓ Secret key kontrolü (SADECE 1 KEZ Tanimlanmali)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 if not app.secret_key:
     print("[FATAL]: FLASK_SECRET_KEY tanımlı değil!")
     sys.exit(1)
 
-# ✓ CSRF koruması (SADECE 1 KEZ Tanimlanmali)
 csrf = CSRFProtect(app)
 
-# ✓ Session güvenlik ayarları
 debug_mode = os.getenv("FLASK_DEBUG", "False").lower() == "true"
 app.config.update(
     SESSION_COOKIE_SECURE=not debug_mode,
@@ -67,7 +55,6 @@ app.config.update(
     MAX_CONTENT_LENGTH=5 * 1024 * 1024
 )
 
-# ✓ Rate Limiting
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
@@ -79,9 +66,7 @@ app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 app.logger.info('YouTube Otomasyonu başlatıldı')
 
-# =========================================================
-# OPENAI CLIENT - GÜVENLİK KONTROLÜ
-# =========================================================
+
 client = None
 try:
     if not API_KEY:
@@ -96,9 +81,7 @@ except Exception as e:
     print(f"[FATAL]: OpenAI API geçersiz! {e}")
     sys.exit(1)
 
-# =========================================================
-# GÜVENLİK FONKSİYONLARI
-# =========================================================
+
 def sanitize_input(text, max_length=1000):
     if not text or not isinstance(text, str):
         return ""
@@ -114,9 +97,7 @@ def validate_category(category):
     valid = ["Vlog", "Yemek", "Podcast", "Travel", "Spor", "Oyun", "Eğitim", "Teknoloji", "Diğer"]
     return category in valid
 
-# =========================================================
-# ERROR HANDLERS
-# =========================================================
+
 @app.errorhandler(404)
 def not_found_error(error):
     app.logger.warning(f'404: {request.url}')
@@ -134,9 +115,7 @@ def ratelimit_handler(e):
     app.logger.warning(f'Rate limit: {request.remote_addr}')
     return render_template('index.html', error_message="Çok fazla istek"), 429
 
-# =========================================================
-# YARDIMCI FONKSİYONLAR
-# =========================================================
+
 def get_unsplash_image(category, title="", detailed_description=""):
     if not UNSPLASH_ACCESS_KEY:
         app.logger.info("Unsplash key yok, gradient kullanılacak")
@@ -277,9 +256,7 @@ def get_unsplash_image(category, title="", detailed_description=""):
         app.logger.warning(f"Unsplash hata: {e}")
         return None
 
-# =========================================================
-# DETAYLANDIRMA
-# =========================================================
+
 def generate_detailed_description(category, user_input):
     app.logger.info(f"Detaylandırma: {category}, {len(user_input)} karakter")
     if not client:
@@ -315,9 +292,7 @@ Sadece açıklama metnini döndür.
             return None, "API limit aşıldı"
         return None, f"API hatası: {error_message[:100]}"
 
-# =========================================================
-# SEO ÜRETİMİ
-# =========================================================
+
 def generate_final_seo(category, detailed_description):
     if not client:
         return None, "API yok"
@@ -393,9 +368,7 @@ KURALLAR:
         app.logger.error(f"SEO hata: {e}")
         return None, f"API başarısız: {str(e)[:50]}"
 
-# =========================================================
-# THUMBNAIL TASARIM
-# =========================================================
+
 def generate_thumbnail_design(category, title, seo_score):
     if not client:
         return None, "API yok"
@@ -473,9 +446,7 @@ KURALLAR:
         app.logger.error(f"Thumbnail tasarım hata: {e}")
         return None, str(e)[:50]
 
-# =========================================================
-# THUMBNAIL GÖRSEL OLUŞTURMA
-# =========================================================
+
 def create_thumbnail_image(design_data, category, title="", detailed_description=""):
     try:
         width, height = 1280, 720
@@ -644,11 +615,9 @@ def create_thumbnail_image(design_data, category, title="", detailed_description
         app.logger.error(f"Thumbnail hata: {e}")
         return None, None, str(e)[:100]
 
-# =========================================================
-# FLASK ROUTES
-# =========================================================
+
 @app.route('/', methods=['GET', 'POST'])
-@limiter.limit("300 per minute") # <- Bu yorumu fark ettim, test için kapatılmış
+@limiter.limit("300 per minute") 
 def index():
     if request.method == 'POST':
         category = request.form.get('category', '').strip()
@@ -816,9 +785,7 @@ def download_thumbnail():
         app.logger.error(f"İndirme hatası: {e}", exc_info=True)
         return "Thumbnail indirilemedi", 500
 
-# =========================================================
-# MAIN
-# =========================================================
+
 if __name__ == '__main__':
     debug_mode = os.getenv("FLASK_DEBUG", "False").lower() == "true"
     
